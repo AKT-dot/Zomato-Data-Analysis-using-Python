@@ -1,0 +1,111 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import matplotlib.colors as mcolors
+
+df = pd.read_csv(r'C:\Users\Ankit Sharma\OneDrive\Desktop\Data Analysis_Projects\Zomato\Zomato data .csv')
+pd.set_option('display.max_rows',None)
+pd.set_option('display.max_columns',None)
+df.head()
+
+df.isnull().sum() # this shows there is no null value hence the data is clean.
+
+#converting rate into integer
+df['rate1'] = (df['rate']).str.split('/').str[0]
+df['rate1']
+
+df.head()
+
+df.info() #there are total 148 entries in each column
+
+#Typed of listed
+plt.figure(figsize=(6,6))
+bars = plt.bar(df['listed_in(type)'].unique(),df['listed_in(type)'].value_counts(), 
+        color = ['red','blue','green','yellow'])
+
+
+#to count the total number of enteries, to calculate the percentage
+count = df['listed_in(type)'].value_counts().sum()
+print(count)
+
+for bar in bars:
+    yval = bar.get_height()
+    percentage = (yval/count)*100
+    plt.text(bar.get_x()+bar.get_width()/2,yval, f'{yval}\n{percentage:.2f}%)',
+             ha = 'center', va = 'bottom', fontsize = 10)
+     
+plt.xlabel('restraunt types listed on zomato')
+plt.ylabel('no. of restraunt')
+plt.tight_layout()
+plt.ylim(0,150)
+plt.show()
+
+#Do a greater number of restaurants provide online delivery as opposed to offline services?
+df['online_order'] = df['online_order'].str.capitalize()
+plt.figure(10,6)
+Yes = df['online_order'].value_counts().get('Yes')
+No = df['online_order'].value_counts().get('No')
+print(Yes)
+print(No)
+sizes = [Yes, No]
+Labels =['Yes','No']
+plt.pie(sizes,labels=Labels,autopct=lambda pct: f'{pct:.1f}% \n ({(pct*sum(sizes)/100):.0f})',
+         shadow = True,wedgeprops={'edgecolor': 'black'})
+
+#Which types of restaurants are the most favored by the general public?
+
+group = df.groupby(by='listed_in(type)')['votes'].sum()
+print(group)
+plt.figure(figsize=(10,6))
+plt.plot(group, marker = 's')
+plt.text(group)
+plt.scatter(group.index, group)
+plt.scatter(df['votes'].value_counts(),df['listed_in(type)'].value_counts(['votes']).sum())
+
+maximum = max(df['votes'])
+
+Restraunt_with_max_votes = df.loc[df['votes']==maximum,'name']
+print(Restraunt_with_max_votes)
+
+
+#What price range is preferred by couples for their dinner at restaurants?
+plt.figure(figsize =(10,6))
+plt.xticks(np.arange(0,1000,50))
+#importing color using matplotlib.color
+n=len(df['approx_cost(for two people)'].value_counts())
+colors = list(mcolors.TABLEAU_COLORS.values())[:n]
+
+
+bars = plt.bar(df['approx_cost(for two people)'].value_counts().index,df['approx_cost(for two people)'].value_counts(),
+               width = 10, edgecolor = 'black',color = colors)
+
+
+for bar in bars:
+    yval = bar.get_height()
+    plt.text(bar.get_x()+bar.get_width()/2,yval,round(yval,2),ha = 'center', va = 'bottom')
+    
+plt.show()
+
+#another method
+plt.figure(figsize =(10,6))
+plt.xticks(np.arange(0,1000,50))
+bars = sns.countplot(x =df['approx_cost(for two people)'],edgecolor = 'black')
+for bar in bars.patches:
+    yval = bar.get_height()
+    plt.text(bar.get_x()+bar.get_width()/2,yval,f'{int(yval)}',
+             ha = 'center', va = 'bottom')
+    
+plt.show()
+
+#distribution based on rating
+count, bin_egdes = np.histogram(df['votes'], bins = np.arange(0,6,0.5))
+
+
+df['rate1'].value_counts()
+plt.hist(df['rate1'], bins = 5)
+
+
+
+
+
